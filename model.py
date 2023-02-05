@@ -15,10 +15,22 @@ class CNN_Model(object):
         self.model = None
 
     def build_model(self, rt=False):
-        self.model = Sequential()
-        self.model.add(Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=(28, 28, 1)))
+        self.model = Sequential()  # Khởi tạo models Sequential ( )
+
+# Tạo Convolutionnal Layers : Conv2D là convolution dùng để lấy feature từ ảnh với các tham số :
+# filters : số filter của convolution
+# kernel_size : kích thước window search trên ảnh
+# strides : số bước nhảy trên ảnh
+# activation : chọn activation như linear, softmax, relu, tanh, sigmoid. Đặc điểm mỗi hàm các bạn có thể search thêm để biết cụ thể nó ntn.
+# padding : có thể là "valid" hoặc "same". Với same thì có nghĩa là padding =1.
+        self.model.add(Conv2D(32, (3, 3), padding='same',
+                       activation='relu', input_shape=(28, 28, 1)))
         self.model.add(Conv2D(32, (3, 3), activation='relu'))
+
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
+
+# Pooling Layers: sử dụng để làm giảm param khi train, nhưng vẫn giữ được đặc trưng của ảnh.
+
         self.model.add(Dropout(0.25))
 
         self.model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
@@ -31,8 +43,17 @@ class CNN_Model(object):
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Dropout(0.25))
 
+#Flatten: chuyển thành array 1 chiều
         self.model.add(Flatten())
+
+        #Dense: 512node; thuật toán relu
         self.model.add(Dense(512, activation='relu'))
+
+# Dense ( ): Layer này cũng như một layer neural network bình thường, với các tham số sau:
+# units : số chiều output, như số class sau khi train ( chó , mèo, lợn, gà).
+# activation : chọn activation đơn giản với sigmoid thì output có 1 class.
+# use_bias : có sử dụng bias hay không (True or False)
+
         self.model.add(Dropout(0.5))
         self.model.add(Dense(128, activation='relu'))
         self.model.add(Dropout(0.5))
@@ -81,15 +102,18 @@ class CNN_Model(object):
         self.build_model(rt=False)
 
         # compile
-        self.model.compile(loss="categorical_crossentropy", optimizer=optimizers.Adam(1e-3), metrics=['acc'])
+        self.model.compile(loss="categorical_crossentropy",
+                           optimizer=optimizers.Adam(1e-3), metrics=['acc'])
 
         # reduce learning rate
-        reduce_lr = ReduceLROnPlateau(monitor='val_acc', factor=0.2, patience=5, verbose=1, )
+        reduce_lr = ReduceLROnPlateau(
+            monitor='val_acc', factor=0.2, patience=5, verbose=1, )
 
         # Model Checkpoint
-        cpt_save = ModelCheckpoint('./weight.h5', save_best_only=True, monitor='val_acc', mode='max')
+        cpt_save = ModelCheckpoint(
+            './weight.h5', save_best_only=True, monitor='val_acc', mode='max')
 
         print("Training......")
+        #học 10 lần
         self.model.fit(images, labels, callbacks=[cpt_save, reduce_lr], verbose=1, epochs=10, validation_split=0.15, batch_size=32,
                        shuffle=True)
-

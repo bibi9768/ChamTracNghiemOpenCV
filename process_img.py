@@ -41,6 +41,8 @@ def crop_image(img):
 
     # find contours
     cnts = cv2.findContours(img_canny.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.imshow("Lucas", blurred)
+    cv2.waitKey()
     cnts = imutils.grab_contours(cnts)
     print(len(cnts))
 
